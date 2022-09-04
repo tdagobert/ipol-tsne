@@ -9,7 +9,7 @@ binfolder=$1
 params=""
 # Then add remaining parameters
 # Start from the second argument: $1 is the bin folder
-for p in "${@:2}"; do
+for p in "${@:1}"; do
     params="$params $p"
 done
 
