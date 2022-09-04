@@ -8,14 +8,14 @@ import sys
 
 #%% In [ ]:
 
-dataset=sys.argv[1]
-data_sample_size=int(sys.argv[2])
-preprocess_data=sys.argv[3]
+dataset=sys.argv[2]
+data_sample_size=int(sys.argv[3])
+preprocess_data=sys.argv[4]
 preprocess_data_with_pca=True if preprocess_data=='pca' else False
 
-n_pca_components=int(sys.argv[4])
-tsne_perplexity=float(sys.argv[5])
-tsne_iter=int(sys.argv[6])
+n_pca_components=int(sys.argv[5])
+tsne_perplexity=float(sys.argv[6])
+tsne_iter=int(sys.argv[7])
 #%% Markdown [ ]:
 
 # # Import packages
