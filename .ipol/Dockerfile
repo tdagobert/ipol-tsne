@@ -1,5 +1,7 @@
 FROM registry.ipol.im/ipol:v1-py3.9
 
+RUN python3 pip install seaborn
+
 RUN mkdir -p /workdir/bin
 RUN mkdir -p /workdir/exec
 
