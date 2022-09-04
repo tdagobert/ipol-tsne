@@ -44,7 +44,12 @@ import time
 
 #%% In [ ]:
 
-mnist = fetch_openml(dataset)
+#mnist = fetch_openml(dataset)
+import scipy
+if 'mnist' is in dataset:
+    mnist = scipy.io.arff.loadarff('/scikit_learn_data/openml/openml.org/data/v1/download/52667')
+if 'cifar' is in dataset:
+    mnist = scipy.io.arff.loadarff('/scikit_learn_data/openml/openml.org/data/v1/download/16797612')
 
 
 #%% In [ ]:
