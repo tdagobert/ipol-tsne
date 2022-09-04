@@ -13,4 +13,5 @@ COPY . .
 
 #COPY .ipol/run.sh /workdir/bin
 
+ENV home /workdir
 WORKDIR /workdir/exec
