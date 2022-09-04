@@ -9,14 +9,15 @@ import sys
 #%% In [ ]:
 print(sys.argv)
 
-dataset=sys.argv[1]
-data_sample_size=int(sys.argv[2])
-preprocess_data=sys.argv[3]
-preprocess_data_with_pca=True if preprocess_data=='pca' else False
+bindir=sys.argv[1]
+dataset=sys.argv[2]
+data_sample_size=int(sys.argv[3])
+preprocess_data=sys.argv[4]
+n_pca_components=int(sys.argv[5])
+tsne_perplexity=float(sys.argv[6])
+tsne_iter=int(sys.argv[7])
 
-n_pca_components=int(sys.argv[4])
-tsne_perplexity=float(sys.argv[5])
-tsne_iter=int(sys.argv[6])
+preprocess_data_with_pca=True if preprocess_data=='pca' else False
 #%% Markdown [ ]:
 
 # # Import packages
@@ -33,7 +34,6 @@ import seaborn as sns
 
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from sklearn.datasets import fetch_openml
 
 import time
 #%% Markdown [ ]:
@@ -45,18 +45,11 @@ import time
 #%% In [ ]:
 
 #mnist = fetch_openml(dataset)
-import scipy
-if 'mnist' is in dataset:
-    mnist = scipy.io.arff.loadarff('/scikit_learn_data/openml/openml.org/data/v1/download/52667')
-if 'cifar' is in dataset:
-    mnist = scipy.io.arff.loadarff('/scikit_learn_data/openml/openml.org/data/v1/download/16797612')
-
-
-#%% In [ ]:
-
-X = mnist.data / 255.0
-y = mnist.target
+d = np.load('%s/%s.npz'%(bindir,dataset), allow_pickle=True)
+X = d['data'] / 255.0
+y = d['target']
 Xshape = X.shape
+
 print(X.shape, y.shape)
 print(type(X), type(y))
 
