@@ -13,6 +13,8 @@ for p in "${@:1}"; do
     params="$params $p"
 done
 
+echo $params
+
 python3 $binfolder/tsne-demo.py $params
 
 
