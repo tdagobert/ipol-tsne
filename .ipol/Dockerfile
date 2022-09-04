@@ -13,5 +13,6 @@ COPY . .
 
 #COPY .ipol/run.sh /workdir/bin
 
-ENV HOME /workdir/exec
+#ENV HOME /workdir/exec
+RUN python3 prefetch_data.py mnist_784 && python3 prefetch_data.py CIFAR_10_small
 WORKDIR /workdir/exec
