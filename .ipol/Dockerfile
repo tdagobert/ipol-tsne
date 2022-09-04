@@ -9,6 +9,6 @@ COPY . .
 #RUN cd src_random_mask  &&  make -j  &&  mv random_mask /workdir/bin/ 
 #RUN cmake  -D IPOL_DEMO=1 .  &&  make -j 
 
-COPY .ipol/run.sh /workdir/bin
+#COPY .ipol/run.sh /workdir/bin
 
 WORKDIR /workdir/exec

@@ -7,6 +7,7 @@ import sys
 
 
 #%% In [ ]:
+print(sys.argv)
 
 dataset=sys.argv[2]
 data_sample_size=int(sys.argv[3])
