@@ -13,6 +13,6 @@ for p in "${@:2}"; do
     params="$params $p"
 done
 
-python3 $binfolder $params
+python3 $binfolder/tsne-demo.py $params
 
 
