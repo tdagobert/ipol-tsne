@@ -130,7 +130,7 @@ df_subset['tsne-PCA2-y'] = pca_2_result[:,1]
 
 #%% In [ ]:
 
-plt.figure(figsize=(16,10))
+plt.figure(figsize=(8,6))
 sns.scatterplot(
     x="tsne-PCA2-x", y="tsne-PCA2-y",
     hue="y",
@@ -170,7 +170,7 @@ df_subset['tsne-PCA10-y'] = tsne_results[:,1]
 
 #%% In [ ]:
 
-plt.figure(figsize=(16,10))
+plt.figure(figsize=(8,6))
 sns.scatterplot(
     x="tsne-PCA10-x", y="tsne-PCA10-y",
     hue="y",
