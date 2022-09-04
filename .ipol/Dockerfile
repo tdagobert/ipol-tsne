@@ -14,7 +14,7 @@ COPY . .
 #COPY .ipol/run.sh /workdir/bin
 
 RUN python3 prefetch_data.py mnist_784 && python3 prefetch_data.py CIFAR_10_small
-RUN gunzip /scikit_learn_data/openml/openml.org/data/v1/download/52667  && gunzip /scikit_learn_data/openml/openml.org/data/v1/download/16797612.gz
+RUN gzip /scikit_learn_data/openml/openml.org/data/v1/download/52667.gz  && gzip /scikit_learn_data/openml/openml.org/data/v1/download/16797612.gz
 
 ENV HOME /workdir/exec
 WORKDIR /workdir/exec
