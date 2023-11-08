@@ -271,6 +271,25 @@ import time
 
 
 # In[ ]:
+def csv_data_loading(cfg):
+
+    X = pd.read_csv(cfg.csv, sep=',', header=None)
+    y = np.array(X.values[:, 0], dtype=np.int16)
+    X = X.values[:, 1:]
+
+    feat_cols = ["pixel" + str(i) for i in range(X.shape[1])]
+    df = pd.DataFrame(X, columns=feat_cols)
+    df['y'] = y
+    df['label'] = df['y'].apply(lambda i: str(i))
+    df['pixel0'] = 0.0    
+    
+    np.random.seed(42)  # For reproducability of the results
+    rndperm = np.random.permutation(df.shape[0])
+
+    N = cfg.ndata
+    df_subset = df.loc[rndperm[:N], :].copy()
+    data_subset = df_subset[feat_cols].values
+    return data_subset, df_subset
 
 
 def cifar_data_loading(cfg):
@@ -346,7 +365,8 @@ def apply_tsne(cfg):
         data, df_subset = mnist_data_loading(cfg)
     elif cfg.dataname == "cifar10":
         data, df_subset = cifar_data_loading(cfg)
-        
+    elif cfg.dataname == "csv":
+        data, df_subset = csv_data_loading(cfg)
     if cfg.pca != 0:
         pca_transform = PCA(n_components=cfg.pca)
         print(data)
@@ -407,7 +427,7 @@ def main():
     a_parser.add_argument("--ndata", type=int, required=True,
                           help="Size of the MNIST subset.")
     a_parser.add_argument(
-        "--dataname", type=str, required=True, choices=["mnist", "cifar10"],
+        "--dataname", type=str, required=True, choices=["mnist", "cifar10", "csv"],
         help="Type of dataset among CIFAR 10 and MNIST."
     )
     a_parser.add_argument("--method", type=str, required=True,
@@ -420,6 +440,9 @@ def main():
                           help="Perplexity.", default=40)
     a_parser.add_argument("--pca", type=int, required=False,
                           help="PCA components.", default=0)
+    a_parser.add_argument("--csv", type=str, required=False,
+                          help="CSV filename.")
+    
     
     cfg = parser.parse_args()
     if cfg.action == "tsne":
@@ -429,3 +452,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+#    ~/python3.10/bin/python3.10 naive_tsne_vs_barnes_hut_tsne.py tsne --ndata 50 --figure cifar_${i}.pdf --method barnes --pca $i --dataname cifar10
