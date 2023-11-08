@@ -371,7 +371,8 @@ def apply_tsne(cfg):
         pca_transform = PCA(n_components=cfg.pca)
         print(data)
         data = pca_transform.fit_transform(data)
-        
+    ndata = data.shape[0]
+    
     # initialization of the TSNE
     if cfg.method == "barnes":
         tsne = TSNE(n_components=2, verbose=1, perplexity=cfg.perplexity,
@@ -406,7 +407,7 @@ def apply_tsne(cfg):
         legend="full",
         alpha=1.0
     ).set(
-        title=f"{title} t-SNE over {cfg.ndata} data ({duration:5.0f} sec)"
+        title=f"{title} t-SNE over {ndata} data ({duration:5.0f} sec)"
     )
     plt.savefig(cfg.figure, bbox_inches='tight')
     plt.show()
