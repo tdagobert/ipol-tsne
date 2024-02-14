@@ -208,7 +208,7 @@ def apply_tsne(cfg):
         data, df_subset, img = tif_data_loading(cfg)
         # plot the image with the encoded colors
         write_image_with_colors(cfg, img)
-        exit()
+
     if cfg.pca != 0:
         pca_transform = PCA(n_components=cfg.pca)
         print(data)
