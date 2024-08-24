@@ -1,26 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
 # BSD 3-Clause License
-# 
+#
 # Copyright (c) 2023 Sangwon Jung      mrswjung@gmail.com,
 #                    Tristan Dagobert  tristan.dagobert@ens-paris-saclay.fr
 #
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 # * Redistributions of source code must retain the above copyright notice, this
 #   list of conditions and the following disclaimer.
-# 
+#
 # * Redistributions in binary form must reproduce the above copyright notice,
 #   this list of conditions and the following disclaimer in the documentation
 #   and/or other materials provided with the distribution.
-# 
+#
 # * Neither the name of the copyright holder nor the names of its
 #   contributors may be used to endorse or promote products derived from
 #   this software without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -33,7 +33,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """
-This program computes the naive t-SNE and the Barnes-Hut t-SNE by calling the 
+This program computes the naive t-SNE and the Barnes-Hut t-SNE by calling the
 corresponding scikit-learn functions. It accepts several parameters and plots
 the results.
 """
@@ -48,7 +48,7 @@ import seaborn as sns
 from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from sklearn.datasets import fetch_openml
-
+from sklearn.metrics import silhouette_score
 import time
 
 
@@ -56,36 +56,36 @@ def write_image_with_colors(cfg, img):
     """
     …
     """
-    
-    palette = sns.color_palette("hls", 10)
+
     # select the class
-    y = img[:, :, 0]
-    class_values = np.unique(y)
+    classes = img[:, :, 0]
+    class_values = np.unique(classes)
     colors = sns.color_palette("hls", 10)
-    mappe = np.zeros((y.shape[0], y.shape[1], 3))
+    mappe = np.zeros((classes.shape[0], classes.shape[1], 3))
 
     # write the map
     for i in np.arange(class_values.shape[0]):
-        mappe[y == class_values[i]] = colors[i]
+        mappe[classes == class_values[i]] = colors[i]
     mappe = np.array(255.0 * mappe, dtype=np.uint8)
     iio.write(cfg.map, mappe)
-    
+
     # select the assumed RGB channels
     rgb = img[:, :, 1:4]
+
     # normalisation
     mini = np.min(rgb)
     maxi = np.max(rgb)
     rgb = 255 * (rgb - mini) / (maxi - mini)
     rgb = np.array(rgb, dtype=np.uint8)
     iio.write(cfg.rgb, rgb)
-    return
+    return 0
 
 
 def tif_data_loading(cfg):
     """
     Loads data stored as a TIF image denoted im, where the class is the first
-    channel : im.shape = (nrow, ncol, ncan). Could be useful for multi-spectral
-    data.
+    channel : y = (nrow, ncol, 0), features = (nrow, ncol, 1:ncan). Could be
+    useful for multi-spectral data.
     """
     img = iio.read(cfg.tif)
     datum = img.reshape(img.shape[0] * img.shape[1], img.shape[2])
@@ -96,18 +96,18 @@ def tif_data_loading(cfg):
     df = pd.DataFrame(X, columns=feat_cols)
     df['y'] = y
     df['label'] = df['y'].apply(lambda i: str(i))
-    df['pixel0'] = 0.0    
-    
+    df['pixel0'] = 0.0
+
     np.random.seed(42)  # For reproducability of the results
     rndperm = np.random.permutation(df.shape[0])
 
     N = cfg.ndata
     df_subset = df.loc[rndperm[:N], :].copy()
     data_subset = df_subset[feat_cols].values
-    
+
     return data_subset, df_subset, img
 
-    
+
 def csv_data_loading(cfg):
     """
     Loads data provided in CSV format.
@@ -120,8 +120,8 @@ def csv_data_loading(cfg):
     df = pd.DataFrame(X, columns=feat_cols)
     df['y'] = y
     df['label'] = df['y'].apply(lambda i: str(i))
-    df['pixel0'] = 0.0    
-    
+    df['pixel0'] = 0.0
+
     np.random.seed(42)  # For reproducability of the results
     rndperm = np.random.permutation(df.shape[0])
 
@@ -213,7 +213,7 @@ def apply_tsne(cfg):
         pca_transform = PCA(n_components=cfg.pca)
         print(data)
         data = pca_transform.fit_transform(data)
-    
+
     # initialization of the TSNE
     if cfg.method == "barnes":
         tsne = TSNE(n_components=2, verbose=1, perplexity=cfg.perplexity,
@@ -233,7 +233,15 @@ def apply_tsne(cfg):
     # data managing
     df_subset['tsne-2d-x'] = tsne_points[:, 0]
     df_subset['tsne-2d-y'] = tsne_points[:, 1]
+#    print("df_subset", type(df_subset), df_subset.keys())
+#    print(type(df_subset["label"]))
+    labels = np.array([i for i in df_subset["label"].to_numpy()])
+#    print(labels)
+    s = silhouette_score(tsne_points, labels)
+    print(f"S={s:3.2f}")
+#    exit()
 
+#    print(df_subset["label"][0])
     # plotting the data
     if cfg.method == "barnes":
         title = "Barnes-Hut"
@@ -284,15 +292,17 @@ def main():
     a_parser.add_argument("--pca", type=int, required=False,
                           help="PCA components.", default=0)
     a_parser.add_argument("--csv", type=str, required=False,
-                          help="CSV filename.")
-    a_parser.add_argument("--tif", type=str, required=False,
-                          help="TIF filename.")
+                          help="Input CSV filename.")
+    a_parser.add_argument(
+        "--tif", type=str, required=False,
+        help=("Input TIF filename where the TIF is a multispectral where"
+              + "y = (nrow, ncol, 0), features = (nrow, ncol, 1:ncan)")
+        )
     a_parser.add_argument("--map", type=str, required=False,
                           help="Output class filename.")
     a_parser.add_argument("--rgb", type=str, required=False,
                           help="RGB output image.")
-    
-    
+
     cfg = parser.parse_args()
     if cfg.action == "tsne":
         apply_tsne(cfg)
@@ -303,7 +313,7 @@ if __name__ == "__main__":
     main()
 
 # Example of usage in bash command :
-# 
+#
 # $ i=50;
 # $ ~/python3.10/bin/python3.10 naive_tsne_vs_barnes_hut_tsne.py tsne \
 #    --ndata 50 --figure cifar_${i}.pdf --method barnes --pca $i \
