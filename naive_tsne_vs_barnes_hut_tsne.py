@@ -38,7 +38,9 @@ corresponding scikit-learn functions. It accepts several parameters and plots
 the results.
 """
 
+import time
 import argparse
+from os.path import splitext
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -49,7 +51,6 @@ from sklearn.manifold import TSNE
 from sklearn.decomposition import PCA
 from sklearn.datasets import fetch_openml
 from sklearn.metrics import silhouette_score
-import time
 
 
 def write_image_with_colors(cfg, img):
@@ -101,8 +102,7 @@ def tif_data_loading(cfg):
     np.random.seed(42)  # For reproducability of the results
     rndperm = np.random.permutation(df.shape[0])
 
-    N = cfg.ndata
-    df_subset = df.loc[rndperm[:N], :].copy()
+    df_subset = df.loc[rndperm[:cfg.ndata], :].copy()
     data_subset = df_subset[feat_cols].values
 
     return data_subset, df_subset, img
@@ -125,8 +125,7 @@ def csv_data_loading(cfg):
     np.random.seed(42)  # For reproducability of the results
     rndperm = np.random.permutation(df.shape[0])
 
-    N = cfg.ndata
-    df_subset = df.loc[rndperm[:N], :].copy()
+    df_subset = df.loc[rndperm[:cfg.ndata], :].copy()
     data_subset = df_subset[feat_cols].values
     return data_subset, df_subset
 
@@ -156,8 +155,7 @@ def cifar_data_loading(cfg):
     np.random.seed(42)  # For reproducability of the results
     rndperm = np.random.permutation(df.shape[0])
 
-    N = cfg.ndata
-    df_subset = df.loc[rndperm[:N], :].copy()
+    df_subset = df.loc[rndperm[:cfg.ndata], :].copy()
     data_subset = df_subset[feat_cols].values
     return data_subset, df_subset
 
@@ -180,14 +178,13 @@ def mnist_data_loading(cfg):
     df['label'] = df['y'].apply(lambda i: str(i))
     df['pixel0'] = 0.0
 
-    print('Size of the dataframe: {}'.format(df.shape))
+    print(f"Size of the dataframe: {df.shape}")
 
     # we randomly sample 10000 MNIST data
     np.random.seed(42)  # For reproducability of the results
     rndperm = np.random.permutation(df.shape[0])
 
-    N = cfg.ndata
-    df_subset = df.loc[rndperm[:N], :].copy()
+    df_subset = df.loc[rndperm[:cfg.ndata], :].copy()
     data_subset = df_subset[feat_cols].values
     return data_subset, df_subset
 
@@ -235,10 +232,14 @@ def apply_tsne(cfg):
     df_subset['tsne-2d-y'] = tsne_points[:, 1]
 #    print("df_subset", type(df_subset), df_subset.keys())
 #    print(type(df_subset["label"]))
-    labels = np.array([i for i in df_subset["label"].to_numpy()])
+    labels = np.array(list(df_subset["label"].to_numpy()))
 #    print(labels)
     s = silhouette_score(tsne_points, labels)
     print(f"S={s:3.2f}")
+
+    fichier = splitext(cfg.figure)[0] + ".txt"
+    with open(fichier, "w", encoding="utf-8") as fic:
+        fic.write(f"{s:9.7f}")
 #    exit()
 
 #    print(df_subset["label"][0])
